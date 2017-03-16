@@ -34,8 +34,8 @@ io.on('connection', function(socket){
 // var server = app.listen(1337, function () {
 //     console.log('The server is listening on port 1337!');
 // });
-
-server.listen(1337, function(){
+var port = process.env.PORT || 3000;
+server.listen(port, function(){
     console.log('The server is listening on port 1337!');
 })
 
