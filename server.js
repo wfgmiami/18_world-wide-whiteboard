@@ -4,7 +4,7 @@ var app = express(); // the app returned by express() is a JavaScript Function. 
 
 app.use(express.static(path.join(__dirname, 'browser')));
 
-app.get('/', function (req, res) {
+app.get('/*', function (req, res) {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
@@ -12,19 +12,23 @@ var server = require('http').createServer(app);
 
 var socketio = require('socket.io');
 
-//server.on('request', app);
+var draws = {};
 var io = socketio(server);
+var room;
 
 io.on('connection', function(socket){
-    console.log('A new client has connected');
-    console.log(socket.id);
 
-    socket.on('disconnect', function(){
-        console.log(':(');
+    socket.on('draw', function(start, end, color){
+
+        draws[room].push({ start: start, end: end, color: color })
+        socket.broadcast.to(room).emit('draw', start, end, color);
     })
 
-    socket.on('draw', function(start, end, strokeColor){
-        socket.broadcast.emit('draw',start,end,strokeColor)
+    socket.on('joinRoom', function(roomName){
+        room = roomName
+        socket.join(roomName);
+        if( !draws[roomName] ) draws[roomName] = [];
+        else socket.emit('drawHistory', draws[roomName]);
     })
 })
 
